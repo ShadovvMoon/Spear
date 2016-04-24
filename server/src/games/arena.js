@@ -37,7 +37,7 @@ module.exports = class extends Game {
 		} else if (action == "move") {
 		
 			// Move in the desired direction
-			if (client.game.energy > 0 && msg['d'] != 4) {
+			if (client.game.energy > 0 && msg['d'] != 4 && msg['d'] != 5) {
 				client.game.energy -= 1; // movement costs 1 energy
 				client.game.d = msg['d'];
 			} else {

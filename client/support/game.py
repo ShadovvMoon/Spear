@@ -4,7 +4,7 @@ import json
 import random
 
 class GameActor(object):
-	def __init__(self, name):
+	def __init__(self, game, name):
 
 		# Create a TCP/IP socket
 		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -19,6 +19,7 @@ class GameActor(object):
 		msg = json.dumps({
 			'action' : 'join',
 			'name' : name,
+			'game' : game,
 			'version' : '1.0'
 		}).encode('utf8')
 		sock.sendall(msg)
@@ -31,9 +32,11 @@ class GameActor(object):
 
 		# Listen for game state
 		while True:
-			count = b2int(sock.recv(4))
+			data = sock.recv(4);
+			count = b2int(data)
 			if (count > 4096):
-				print("Error: packet too large")
+				print(data[0], data[1], data[2], data[3])
+				print("Error: packet too large ({})".format(str(count)))
 				break
 		
 			# read the full message

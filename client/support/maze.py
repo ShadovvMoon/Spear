@@ -1,7 +1,7 @@
 from support.game import *
 class MazeActor(GameActor):
 	def __init__(self, name):
-		GameActor.__init__(self, name)
+		GameActor.__init__(self, "maze", name)
 
 	def _onMessage(self, msg):
 		action = msg.get("action");

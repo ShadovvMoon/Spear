@@ -71,7 +71,11 @@ function connect() {
 		return;
 	}
 
-	game = new WebSocket("ws://localhost:8080");
+	if(!window.location.hash) {
+		return;
+	}
+    var hash = window.location.hash.substring(1)
+	game = new WebSocket("ws://localhost:8080", hash);
 	game.onmessage = function (event) {
 		var msg = undefined;
 		try {
