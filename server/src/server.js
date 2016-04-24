@@ -41,6 +41,14 @@ module.exports = class {
 			  return;
 			}
 	
+			// Max clients
+			if (clients.length >= 3) {
+				request.reject();
+				console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected - too many clients.');
+				return;
+			}
+			
+			// Check protocol
 			const gametypes = request.requestedProtocols;
 			if (typeof gametypes === 'undefined' || gametypes.length < 1) {
 				request.reject();
@@ -97,6 +105,10 @@ module.exports = class {
 		var clients = [];
 		var server = net.createServer((client) => {
 			client.active = false;
+			if (clients.length >= 30) {
+				console.log("Error: kicked client - server is full");
+				return client.destroy();
+			}
 			clients.push(client);
 			
 			// Utility function
