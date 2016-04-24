@@ -1,0 +1,5 @@
+.idea/
+node_modules/
+db/
+__pycache__/
+.idea/workspace.xml

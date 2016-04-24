@@ -1,0 +1,19 @@
+{
+  "name": "Spear",
+  "version": "1.0.0",
+  "description": "An interactive platform for teaching programming by running mini competitions between students",
+  "dependencies": {
+    "body-parser": "*",
+    "express": "*",
+    "express-session": "*",
+    "websocket": "*"
+  },
+  "author": {
+    "name": "Samuel Colbran",
+    "email": "contact@samuco.net"
+  },
+  "engines": {
+    "node": "0.10.x",
+    "npm": "1.5.x"
+  }
+}
