@@ -4,6 +4,8 @@ module.exports = class {
 
 	httpServer() {
 		const self = this;
+		
+		const server = require('http').createServer()
 		const config = require("../config.js");
 		const url = require('url');
 		
@@ -27,8 +29,9 @@ module.exports = class {
 		*/
 		
 		var wsServer = new WebSocketServer({
-			host: "127.0.0.1",
-			port: config.ports.html,
+			//host: "127.0.0.1",
+			//port: config.ports.html,
+			server: server,
 			path: config.path.html
 		});
  
@@ -107,6 +110,9 @@ module.exports = class {
 				console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
 			});
 		});
+		
+		//server.on('request', app);
+		server.listen(config.ports.html, function () { console.log('Listening on ' + server.address().port) });
 	}
 
 	
