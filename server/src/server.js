@@ -16,7 +16,10 @@ module.exports = class {
 			response.writeHead(404);
 			response.end();
 		});
-		server.listen(config.ports.html, function() {
+		server.listen({
+			port: config.ports.html,
+			path: config.path.html
+		}, function() {
 			console.log((new Date()) + ' Server is listening on port 8080');
 		});
 		var wsServer = new WebSocketServer({
@@ -247,7 +250,11 @@ module.exports = class {
 				return client.destroy();
 			});
 		});
-		server.listen(port, config.domain);
+		server.listen({
+			port: port,
+			host: config.domain,
+			path: config.path.python
+		});
 	}
 
 	constructor(port) {
