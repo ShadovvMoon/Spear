@@ -17,13 +17,13 @@ module.exports = class {
 			response.end();
 		});
 		server.listen({
-			port: config.ports.html,
-			path: config.path.html
+			port: config.ports.html
 		}, function() {
 			console.log((new Date()) + ' Server is listening on port ' + config.ports.html);
 		});
 		var wsServer = new WebSocketServer({
 			httpServer: server,
+			path: config.path.html
 			// You should not use autoAcceptConnections for production 
 			// applications, as it defeats all standard cross-origin protection 
 			// facilities built into the protocol and the browser.  You should 
