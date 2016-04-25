@@ -4,6 +4,8 @@ module.exports = class {
 
 	httpServer() {
 		const self = this;
+		const config = require("../config.js");
+		
 		console.log("Starting websocket server...");
 		
 		// Create the client server
@@ -14,7 +16,7 @@ module.exports = class {
 			response.writeHead(404);
 			response.end();
 		});
-		server.listen(8080, function() {
+		server.listen(config.ports.html, function() {
 			console.log((new Date()) + ' Server is listening on port 8080');
 		});
 		var wsServer = new WebSocketServer({
@@ -100,6 +102,7 @@ module.exports = class {
 		// Create the game server
 		const required_version = "1.0"; // required client version
 		const net = require('net');
+		const config = require("../config.js");
 		const self = this;
 		
 		var clients = [];
@@ -244,7 +247,7 @@ module.exports = class {
 				return client.destroy();
 			});
 		});
-		server.listen(port, '127.0.0.1');
+		server.listen(port, config.domain);
 	}
 
 	constructor(port) {

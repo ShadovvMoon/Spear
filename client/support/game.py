@@ -3,6 +3,8 @@ import sys
 import json
 import random
 
+hostname = '127.0.0.1'
+port = 5000
 class GameActor(object):
 	def __init__(self, game, name):
 
@@ -11,7 +13,7 @@ class GameActor(object):
 		self._sock = sock;	
 
 		# Connect the socket to the port where the server is listening
-		server_address = ('localhost', 4000)
+		server_address = (hostname, port)
 		print('Connecting to %s port %s...' % server_address)
 		sock.connect(server_address)
 		
