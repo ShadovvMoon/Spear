@@ -23,7 +23,7 @@ module.exports = class {
 		});
 		var wsServer = new WebSocketServer({
 			httpServer: server,
-			path: config.path.html
+			path: config.path.html,
 			// You should not use autoAcceptConnections for production 
 			// applications, as it defeats all standard cross-origin protection 
 			// facilities built into the protocol and the browser.  You should 
