@@ -6,7 +6,8 @@
     "body-parser": "*",
     "express": "*",
     "express-session": "*",
-    "websocket": "*"
+    "websocket": "*",
+    "ws" : "*"
   },
   "author": {
     "name": "Samuel Colbran",

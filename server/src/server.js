@@ -9,7 +9,7 @@ module.exports = class {
 		console.log("Starting websocket server...");
 		
 		// Create the client server
-		var WebSocketServer = require('websocket').server;
+		var WebSocketServer = require('ws').Server;
 		var http = require('http');
 		var server = http.createServer(function(request, response) {
 			console.log((new Date()) + ' Received request for ' + request.url);
@@ -22,14 +22,8 @@ module.exports = class {
 			console.log((new Date()) + ' Server is listening on port ' + config.ports.html);
 		});
 		var wsServer = new WebSocketServer({
-			httpServer: server,
-			path: config.path.html,
-			// You should not use autoAcceptConnections for production 
-			// applications, as it defeats all standard cross-origin protection 
-			// facilities built into the protocol and the browser.  You should 
-			// *always* verify the connection's origin and decide whether or not 
-			// to accept it. 
-			autoAcceptConnections: false
+			server: server,
+			path: config.path.html
 		});
  
 		function originIsAllowed(origin) {
@@ -37,16 +31,19 @@ module.exports = class {
 		}
  
  		var clients = [];
-		wsServer.on('request', function(request) {
+		wsServer.on('connection', function(connection) {
 		
 			// Only accept requests from an allowed origin 
+			/*
 			if (!originIsAllowed(request.origin)) {
 			  request.reject();
 			  console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected.');
 			  return;
 			}
+			*/
 	
 			// Max clients
+			/*
 			if (clients.length >= 3) {
 				request.reject();
 				console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected - too many clients.');
@@ -72,10 +69,12 @@ module.exports = class {
 				console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected - invalid gametype.');
 				return;
 			}
+			*/
 			
-			var connection = request.accept('', request.origin);
+			//var connection = request.accept('', request.origin);
 			controller.joinHTML(connection);
 			clients.push(connection);
+			
 					
 			// Events
 			console.log((new Date()) + ' Connection accepted.');
