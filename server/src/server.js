@@ -39,7 +39,6 @@ module.exports = class {
 			console.log((new Date()) + ' Received request for ' + request.url);
 			if (request.url == "/game/socket") {
 				// Upgrade
-				server.emit('upgrade' request socket head)
 				return;
 			}
 			response.writeHead(404);
