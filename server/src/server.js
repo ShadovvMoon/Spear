@@ -13,6 +13,11 @@ module.exports = class {
 		var http = require('http');
 		var server = http.createServer(function(request, response) {
 			console.log((new Date()) + ' Received request for ' + request.url);
+			if (request.url == "/game/socket") {
+				// Upgrade
+				response.end('okay');
+				return;
+			}
 			response.writeHead(404);
 			response.end();
 		});
@@ -26,7 +31,7 @@ module.exports = class {
 			// facilities built into the protocol and the browser.  You should 
 			// *always* verify the connection's origin and decide whether or not 
 			// to accept it. 
-			autoAcceptConnections: true
+			autoAcceptConnections: false
 		});
  
 		function originIsAllowed(origin) {
