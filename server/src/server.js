@@ -5,6 +5,7 @@ module.exports = class {
 	httpServer() {
 		const self = this;
 		const config = require("../config.js");
+		const url = require('url');
 		
 		console.log("Starting websocket server...");
 		
@@ -37,6 +38,12 @@ module.exports = class {
  
  		var clients = [];
 		wsServer.on('connection', function(connection) {
+		
+			// Upgrade the connection
+			var location = url.parse(connection.upgradeReq.url, true);
+		 	// you might use location.query.access_token to authenticate or share sessions
+		  	// or ws.upgradeReq.headers.cookie (see http://stackoverflow.com/a/16395220/151312)
+
 		
 			// Only accept requests from an allowed origin 
 			/*
