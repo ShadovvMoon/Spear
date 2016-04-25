@@ -75,7 +75,7 @@ function connect() {
 		return;
 	}
     var hash = window.location.hash.substring(1)
-	game = new WebSocket("ws://csse1001.uqcloud.net/game/socket", 'maze');
+	game = new WebSocket("ws://csse1001.uqcloud.net:80/game/socket", 'maze');
 	game.onmessage = function (event) {
 		console.log(event.data);
 		var msg = undefined;

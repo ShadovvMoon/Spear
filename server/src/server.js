@@ -3,6 +3,30 @@
 module.exports = class {
 
 	httpServer() {
+	
+		var http = require('http');
+		var WebSocketServer = require('ws').Server;
+
+		var server = http.createServer();
+		var wss = new WebSocketServer({
+			server: server,
+			path: '/game/socket'
+		});
+
+		wss.on('connection', function (ws) {
+
+			ws.send('echo server');
+
+			ws.on('message', function (message) {
+				ws.send(message);
+			});
+
+		});
+
+		server.listen(7000);
+	
+		return;
+	
 		const self = this;
 		const config = require("../config.js");
 		
@@ -15,7 +39,7 @@ module.exports = class {
 			console.log((new Date()) + ' Received request for ' + request.url);
 			if (request.url == "/game/socket") {
 				// Upgrade
-				response.end('okay');
+				server.emit('upgrade' request socket head)
 				return;
 			}
 			response.writeHead(404);
