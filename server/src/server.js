@@ -11,7 +11,9 @@ module.exports = class {
 		// Create the client server
 		var WebSocketServer = require('ws').Server;
 		var http = require('http');
-		var server = http.createServer(function(request, response) {
+		
+		
+		/*var server = http.createServer(function(request, response) {
 			console.log((new Date()) + ' Received request for ' + request.url);
 			response.writeHead(404);
 			response.end();
@@ -21,8 +23,11 @@ module.exports = class {
 		}, function() {
 			console.log((new Date()) + ' Server is listening on port ' + config.ports.html);
 		});
+		*/
+		
 		var wsServer = new WebSocketServer({
-			server: server,
+			host: "csse1001.uqcloud.net",
+			port: config.ports.html
 			path: config.path.html
 		});
  
