@@ -4,35 +4,29 @@ module.exports = class {
 
 	httpServer() {
 		const self = this;
-		
-		const server = require('http').createServer()
 		const config = require("../config.js");
-		const url = require('url');
 		
 		console.log("Starting websocket server...");
 		
 		// Create the client server
-		var WebSocketServer = require('ws').Server;
+		var WebSocketServer = require('websocket').server;
 		var http = require('http');
-		
-		
-		/*var server = http.createServer(function(request, response) {
+		var server = http.createServer(function(request, response) {
 			console.log((new Date()) + ' Received request for ' + request.url);
 			response.writeHead(404);
 			response.end();
 		});
-		server.listen({
-			port: config.ports.html
-		}, function() {
-			console.log((new Date()) + ' Server is listening on port ' + config.ports.html);
+		server.listen(config.ports.html, function() {
+			console.log((new Date()) + ' Server is listening on port 8080');
 		});
-		*/
-		
 		var wsServer = new WebSocketServer({
-			//host: "127.0.0.1",
-			//port: config.ports.html,
-			server: server,
-			path: config.path.html
+			httpServer: server,
+			// You should not use autoAcceptConnections for production 
+			// applications, as it defeats all standard cross-origin protection 
+			// facilities built into the protocol and the browser.  You should 
+			// *always* verify the connection's origin and decide whether or not 
+			// to accept it. 
+			autoAcceptConnections: false
 		});
  
 		function originIsAllowed(origin) {
@@ -40,25 +34,16 @@ module.exports = class {
 		}
  
  		var clients = [];
-		wsServer.on('connection', function(connection) {
-		
-			// Upgrade the connection
-			var location = url.parse(connection.upgradeReq.url, true);
-		 	// you might use location.query.access_token to authenticate or share sessions
-		  	// or ws.upgradeReq.headers.cookie (see http://stackoverflow.com/a/16395220/151312)
-
+		wsServer.on('request', function(request) {
 		
 			// Only accept requests from an allowed origin 
-			/*
 			if (!originIsAllowed(request.origin)) {
 			  request.reject();
 			  console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected.');
 			  return;
 			}
-			*/
 	
 			// Max clients
-			/*
 			if (clients.length >= 3) {
 				request.reject();
 				console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected - too many clients.');
@@ -84,12 +69,10 @@ module.exports = class {
 				console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected - invalid gametype.');
 				return;
 			}
-			*/
 			
-			//var connection = request.accept('', request.origin);
+			var connection = request.accept('', request.origin);
 			controller.joinHTML(connection);
 			clients.push(connection);
-			
 					
 			// Events
 			console.log((new Date()) + ' Connection accepted.');
@@ -110,9 +93,6 @@ module.exports = class {
 				console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
 			});
 		});
-		
-		//server.on('request', app);
-		server.listen(config.ports.html, function () { console.log('Listening on ' + server.address().port) });
 	}
 
 	
@@ -267,11 +247,7 @@ module.exports = class {
 				return client.destroy();
 			});
 		});
-		server.listen({
-			port: port,
-			host: config.domain,
-			path: config.path.python
-		});
+		server.listen(port, config.domain);
 	}
 
 	constructor(port) {
@@ -306,7 +282,7 @@ module.exports = class {
 			console.log("Starting servers...");
 				
 			this.httpServer();
-			//this.gameServer(port);
+			this.gameServer(port);
 		}, console.error);
 	}
 }
