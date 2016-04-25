@@ -282,7 +282,7 @@ module.exports = class {
 			console.log("Starting servers...");
 				
 			this.httpServer();
-			this.gameServer(port);
+			//this.gameServer(port);
 		}, console.error);
 	}
 }
