@@ -18,7 +18,7 @@ class MazeActor(GameActor):
 			'action' : 'move',
 			'd' : direction
 		}).encode('utf8')
-		self._sock.sendall(msg)
+		self._ws.send(msg)
 
 	def x(self):
 		return self._x

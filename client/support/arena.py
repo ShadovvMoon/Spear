@@ -76,7 +76,7 @@ class ArenaActor(GameActor, Player):
 			'action' : 'move',
 			'd' : direction
 		}).encode('utf8')
-		self._sock.sendall(msg)
+		self._ws.send(msg)
 		
 	def fire(self, x, y):
 		msg = json.dumps({
@@ -84,7 +84,7 @@ class ArenaActor(GameActor, Player):
 			'x' : x,
 			'y' : y
 		}).encode('utf8')
-		self._sock.sendall(msg)
+		self._ws.send(msg)
 
 	def players(self):
 		return self._players

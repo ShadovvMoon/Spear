@@ -20,7 +20,7 @@ module.exports = class {
 			port: config.ports.html,
 			path: config.path.html
 		}, function() {
-			console.log((new Date()) + ' Server is listening on port 8080');
+			console.log((new Date()) + ' Server is listening on port ' + config.ports.html);
 		});
 		var wsServer = new WebSocketServer({
 			httpServer: server,
@@ -289,7 +289,7 @@ module.exports = class {
 			console.log("Starting servers...");
 				
 			this.httpServer();
-			this.gameServer(port);
+			//this.gameServer(port);
 		}, console.error);
 	}
 }

@@ -75,8 +75,9 @@ function connect() {
 		return;
 	}
     var hash = window.location.hash.substring(1)
-	game = new WebSocket("ws://samuco.com.au:8080", hash);
+	game = new WebSocket("ws://csse1001.uqcloud.net/game/socket", hash);
 	game.onmessage = function (event) {
+		console.log(event.data);
 		var msg = undefined;
 		try {
 			msg = JSON.parse(event.data);
