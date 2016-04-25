@@ -27,7 +27,7 @@ module.exports = class {
 		
 		var wsServer = new WebSocketServer({
 			host: "csse1001.uqcloud.net",
-			port: config.ports.html
+			port: config.ports.html,
 			path: config.path.html
 		});
  
