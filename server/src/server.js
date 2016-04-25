@@ -10,7 +10,7 @@ module.exports = class {
 		var server = http.createServer();
 		var wss = new WebSocketServer({
 			server: server,
-			path: '/game/socket'
+			path: '/socket'
 		});
 
 		wss.on('connection', function (ws) {
