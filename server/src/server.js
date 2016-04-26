@@ -6,7 +6,7 @@ module.exports = class {
 		const self = this;
 		
 		// Max clients
-		if (self.httpClients.length >= 3) {
+		if (self.httpClients.length >= 10) {
 			request.reject();
 			console.log((new Date()) + 
 			' Connection from origin ' + request.origin + 
@@ -69,7 +69,7 @@ module.exports = class {
 		const required_version = "1.0"; // required client version
 		
 		// Max clients
-		if (self.gameClients.length >= 30) {
+		if (self.gameClients.length >= 50) {
 			request.reject();
 			console.log((new Date()) + 
 			' Connection from origin ' + request.origin + 
