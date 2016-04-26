@@ -84,6 +84,15 @@ module.exports = class {
 			"r" : r
 		});
 	}
+
+	fillCube(elements, x, y, r) {
+		elements.push({
+			"type" : "cube",
+			"x" : x,
+			"y" : y,
+			"r" : r
+		});
+	}
 	
 	strokeLine(elements, x1, y1, x2, y2) {
 		elements.push({

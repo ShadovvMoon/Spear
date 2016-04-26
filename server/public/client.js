@@ -8,20 +8,44 @@ var base   = [];
 var target = 0;
 
 var ctx = c.getContext("2d");
-function draw() {
+function draw(width, height) {
 	ctx.clearRect(0, 0, c.width, c.height);
 	ctx.fillStyle = "#EEEEEE";
 	ctx.fillRect(0, 0, c.width, c.height);
 	
+	var scalex = c.width / width;
+	var scaley = c.height / height;
+		
 	// Render base
 	for (var i = 0; i < base.length; i++) {
 		var element = base[i];
-		drawElement(element);
+		drawElement(element, scalex, scaley);
 	}
 }
 draw();
 
-function drawElement(element) {
+function elementSize(element) {
+	if (type == 'circle') {
+		var x = element['x'];
+		var y = element['y'];
+		var r = element['r'];
+		return [x, y, r*2, r*2];
+	} else if (type == 'line') {
+		var x1 = element['x1'];
+		var y1 = element['y1'];
+		var x2 = element['x2'];
+		var y2 = element['y2'];
+		return [x1, y1, x2 - x1, y2 - y1];
+	} else if (type == 'text') {
+		var x = element['x'];
+		var y = element['y'];
+		var t = element['t'];
+		return [x,y,0,0];
+	} 
+	return [0,0,0,0]
+}
+
+function drawElement(element, scalex, scaley) {
 	var type = element['type'];
 	if (type == 'fill') {
 		var color = element['color'];
@@ -33,14 +57,19 @@ function drawElement(element) {
 		var font = element['font'];
 		ctx.font = font;
 	} else if (type == 'circle') {
-		var x = element['x'];
-		var y = element['y'];
+		var x = element['x'] * scalex;
+		var y = element['y'] * scaley;
 		var r = element['r'];
 	
 		ctx.beginPath();
 		ctx.arc(x, y, r, 0, Math.PI*2, true); 
 		ctx.closePath();
 		ctx.fill();
+	} else if (type == 'cube') {
+		var x = element['x'] * scalex;
+		var y = element['y'] * scaley;
+		var r = element['r'];
+		ctx.fillRect(x, y, r * scalex, r * scaley);
 	} else if (type == 'line') {
 		var x1 = element['x1'];
 		var y1 = element['y1'];
@@ -48,13 +77,13 @@ function drawElement(element) {
 		var y2 = element['y2'];
 		
 		ctx.beginPath();
-		ctx.moveTo(x1, y1);
-		ctx.lineTo(x2, y2);
+		ctx.moveTo(x1 * scalex, y1 * scaley);
+		ctx.lineTo(x2 * scalex, y2 * scaley);
 		ctx.closePath();
 		ctx.stroke();
 	} else if (type == 'text') {
-		var x = element['x'];
-		var y = element['y'];
+		var x = element['x'] * scalex;
+		var y = element['y'] * scaley;
 		var t = element['t'];
 	
 		ctx.textAlign = "center"; 
@@ -92,15 +121,29 @@ function connect() {
 			var elements = msg['elements'];
 		
 			// Update the canvas size
-			c.width = width;
-			c.height = height;
-			window.width = width;
-			window.height = height;
+			if (c.width != window.innerWidth  - 15 || c.height != window.innerHeight - 15) {
+				c.width = window.innerWidth   - 15;
+				c.height = window.innerHeight - 15;
+			}
+			var scalex = c.width / width;
+			var scaley = c.height / height;
 		
+			// Compute the 'dirty' area
+			/*
+			for (var i = 0; i < elements.length; i++) {
+				var element = elements[i];
+				var type = element['type'];
+				
+				if (target == 0) {
+					elementSize(element);
+				}
+			}
+			*/
+			
 			// Draw the base color
 			var ctx = c.getContext("2d");
-			draw();
-		
+			draw(width, height);
+			
 			// Draw the elements
 			for (var i = 0; i < elements.length; i++) {
 				var element = elements[i];
@@ -118,7 +161,7 @@ function connect() {
 				} else if (target == 1) {
 					base.push(element);
 				} else {
-					drawElement(element);
+					drawElement(element, scalex, scaley);
 				}
 			}
 		}

@@ -69,12 +69,15 @@ module.exports = class extends Game {
 		// Arena options
 		this.width   = 500; // arena width
 		this.height  = 500; // arena height
-		this.xsize   = 10;
+		this.xsize   = 30;
 		this.ysize   = this.xsize;
 		this.padd    = 0;
 		
+		// Speed boost
+		this.rPerTick = 5;
+		
 		// Create the maze
-		this.maze = this.newMaze(this.xsize - 2 * this.padd, this.ysize - 2 * this.padd);
+		this.maze  = this.newMaze(this.xsize - 2 * this.padd, this.ysize - 2 * this.padd);
 	}
 	
 	renderMaze(client) {
@@ -177,56 +180,78 @@ module.exports = class extends Game {
 			let ry = (client.game.y + this.padd) * (this.height / this.ysize) + cellSize / 2;
 			this.fillCircle(elements, rx, ry, cellSize / 4);
 			this.fillText(elements, rx, ry - cellSize / 4 - 5, client.name);
+			
+			this.setFill(elements, "rgba(" + 
+				client.game.c[0] + "," +
+				client.game.c[1] + "," +
+				client.game.c[2] + ", 0.1)");
+			for (var trail of client.game.t) {
+				elements.push(trail)
+			}
 		}
-		
-		
 		
 		// Draw the elements
 		this.draw(elements, undefined);
 	}
 
+	executeMove(client, x, y) {
+	
+		// Update client position
+		let cell = this.maze[y][x];
+		if (client.game.cd == 0 && cell[0] != 0) { // up
+			y -= 1;
+		} else if (client.game.cd == 1 && cell[1] != 0) { // right
+			x += 1;
+		} else if (client.game.cd == 2 && cell[2] != 0) { // down
+			y += 1;
+		} else if (client.game.cd == 3 && cell[3] != 0) { // left
+			x -= 1;
+		} else {
+			// invalid move
+		}
+
+		// Bounds
+		if (x >= this.xsize) {
+			x = this.xsize - 1 - 2 * this.padd;
+		}
+		if (y >= this.ysize) {
+			y = this.ysize - 1 - 2 * this.padd;
+		}
+		if (x <= 0) {
+			x = 0;
+		}
+		if (y <= 0) {
+			y = 0;
+		}			
+		
+		return [x, y]
+	}
+
 	tick() {
 		for (var client of this.clients) {
-			// Update client movement
-			client.game.cd = client.game.d;
-			client.game.d = 4;
-		
-			// Update client position
-			let cell = this.maze[client.game.my][client.game.mx];
-			if (client.game.cd == 0 && cell[0] != 0) { // up
-				client.game.my -= 1;
-			} else if (client.game.cd == 1 && cell[1] != 0) { // right
-				client.game.mx += 1;
-			} else if (client.game.cd == 2 && cell[2] != 0) { // down
-				client.game.my += 1;
-			} else if (client.game.cd == 3 && cell[3] != 0) { // left
-				client.game.mx -= 1;
-			} else {
-				// invalid move
-			}
-			
-			// Bounds
-			if (client.game.mx >= this.xsize) {
-				client.game.mx = this.xsize - 1 - 2 * this.padd;
-			}
-			if (client.game.my >= this.ysize) {
-				client.game.my = this.ysize - 1 - 2 * this.padd;
-			}
-			if (client.game.mx <= 0) {
-				client.game.mx = 0;
-			}
-			if (client.game.my <= 0) {
-				client.game.my = 0;
-			}			
+			var c = this.executeMove(client, client.game.mx, client.game.my);
+			client.game.mx = c[0];
+			client.game.my = c[1];
 			client.game.x = client.game.mx;
 			client.game.y = client.game.my;
 			
+			// Map movements
+			let cellSize = (this.width / this.xsize);
+			let rx = (client.game.x + this.padd) * (this.width  / this.xsize);
+			let ry = (client.game.y + this.padd) * (this.height / this.ysize);
+			this.fillCube(client.game.t, rx, ry, cellSize);
+
+			// Update client movement
+			client.game.cd = client.game.d;
+			client.game.d = 4;
+			
 			// Update state
+			c = this.executeMove(client, client.game.mx, client.game.my);
 			let state = JSON.stringify({
 				action: "game",
-				x: client.game.x,
-				y: client.game.y,
-				s: this.maze[client.game.my][client.game.mx]
+				x: c[0],
+				y: c[1],
+				s: this.maze[c[1]][c[0]]
 			});
 			client.message(state);
 		}
@@ -252,6 +277,7 @@ module.exports = class extends Game {
 		client.game.y  = this.ysize - 1 - 2 * this.padd;
 		client.game.mx = this.xsize - 1 - 2 * this.padd;
 		client.game.my = this.ysize - 1 - 2 * this.padd;
+		client.game.t = [];
 		client.game.c = [
 			Math.floor(Math.random() % 150 + 50), 
 			Math.floor(Math.random() * 150 + 50),
