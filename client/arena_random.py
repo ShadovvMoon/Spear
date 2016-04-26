@@ -23,4 +23,5 @@ class ArenaRobot(ArenaActor):
 		elif (direction == 3):
 			self.moveRight()
 
-ArenaRobot();
+if __name__ == "__main__":
+	ArenaRobot()

@@ -66,13 +66,12 @@ function drawElement(element) {
 
 // Connect to the game server
 var game = null;
+var state = 0; // 0 = closed, 1 = connecting, 2 = 
 function connect() {
-	if (game != null && game.readyState == 1) {
+	if ((game != null && (game.readyState == 1 || state == 1)) || !window.location.hash) {
 		return;
 	}
-	if(!window.location.hash) {
-		return;
-	}
+	state = 1;
 	
     var hash = window.location.hash.substring(1)
 	game = new WebSocket("ws://localhost:7000/game/socket", hash);
@@ -126,10 +125,12 @@ function connect() {
 	};
 	game.onopen = function() {
 		console.log("open");
+		state = 2;
 	}
 	game.onclose = function() { 
 		console.log("closed");
+		state = 0;
 	};
 }
-setInterval(connect, 1000);
+setInterval(connect, 5000);
 connect();

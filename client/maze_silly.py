@@ -15,4 +15,6 @@ class MazeRobot(MazeActor):
 			self.moveDown()
 		elif self.canMoveRight():
 			self.moveRight()
-MazeRobot();
+
+if __name__ == "__main__":
+	MazeRobot();

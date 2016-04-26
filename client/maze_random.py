@@ -22,5 +22,6 @@ class MazeRobot(MazeActor):
 			elif move == 3 and self.canMoveRight():
 				self.moveRight()
 				break
-			
-MazeRobot();
+
+if __name__ == "__main__":
+	MazeRobot();

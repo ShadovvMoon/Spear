@@ -16,4 +16,5 @@ class ArenaRobot(ArenaActor):
 		player = self.players()[index]
 		self.fire(player.x(), player.y())
 
-ArenaRobot();
+if __name__ == "__main__":
+	ArenaRobot();
