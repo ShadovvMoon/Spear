@@ -2,6 +2,7 @@ import socket
 import sys
 import json
 import random
+
 from support import websocket
 
 class GameActor(object):
@@ -19,7 +20,8 @@ class GameActor(object):
 		}).encode('utf8')
 		self._ws.send(msg)
 		
-		# Listen for game state
+	def start(self):
+                # Listen for game state
 		while True:
 			# read the full message
 			data = self._ws.recv()
