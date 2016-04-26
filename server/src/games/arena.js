@@ -141,7 +141,7 @@ module.exports = class extends Game {
 		// Animation
 		let self = this;
 		function animateClient(client) {
-			let d = client.game.d;
+			let d = client.game.cd;
 			if (d == 0) { // up
 				client.game.y += self.move / self.rPerTick;
 			} else if (d == 1) { // down
@@ -328,7 +328,8 @@ module.exports = class extends Game {
 					continue;
 				}
 				client.game.energy += 1; // +1 energy!
-				client.game.d = 4; 		 // stop moving
+				client.game.cd = client.game.d
+				client.game.d  = 4; 		 // stop moving
 			
 				// Alive?
 				if (client.game.ft == 0) {
