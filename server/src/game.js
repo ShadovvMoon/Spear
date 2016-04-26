@@ -64,7 +64,7 @@ module.exports = class {
 	
 	setStroke(elements, color) {
 		elements.push({
-			"type" : "stroke",
+			"type" : "stoke",
 			"color" : color
 		});
 	}

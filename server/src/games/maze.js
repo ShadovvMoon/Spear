@@ -73,9 +73,6 @@ module.exports = class extends Game {
 		this.ysize   = this.xsize;
 		this.padd    = 0;
 		
-		// Speed boost
-		this.rPerTick = 5;
-		
 		// Create the maze
 		this.maze  = this.newMaze(this.xsize - 2 * this.padd, this.ysize - 2 * this.padd);
 	}
