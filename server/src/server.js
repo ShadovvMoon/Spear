@@ -23,10 +23,12 @@ module.exports = class {
 			' rejected - missing gametype.');
 			return;
 		}
+		let play = undefined;
 		let controller = null;
 		for (const gametype of gametypes) {
 			if (self.controllers.has(gametype)) {
 				controller = self.controllers.get(gametype);
+				play = gametype;
 				break;
 			}
 		}
@@ -38,7 +40,7 @@ module.exports = class {
 			return;
 		}
 		
-		var connection = request.accept('', request.origin);
+		var connection = request.accept(play, request.origin);
 		controller.joinHTML(connection);
 		self.httpClients.push(connection);
 				
