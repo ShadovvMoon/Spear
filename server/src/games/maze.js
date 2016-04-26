@@ -239,8 +239,9 @@ module.exports = class extends Game {
 			let cellSize = (this.width / this.xsize);
 			let rx = (client.game.x + this.padd) * (this.width  / this.xsize);
 			let ry = (client.game.y + this.padd) * (this.height / this.ysize);
-			if (client.game.t.length > 10):
+			if (client.game.t.length > 10) {
 				client.game.t.shift()
+			}
 			this.fillCube(client.game.t, rx, ry, cellSize);
 			
 			// Update client movement
