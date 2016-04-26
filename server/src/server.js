@@ -218,7 +218,7 @@ module.exports = class {
 		
 		// Simple resource map
 		var resource = {
-			"/game/client" : "./public/client.html",
+			"/game/client.html" : "./public/client.html",
 			"/game/client.js" : "./public/client.js"
 		}
 		
