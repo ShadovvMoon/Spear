@@ -76,7 +76,7 @@ function connect() {
 	}
 	
     var hash = window.location.hash.substring(1)
-	game = new WebSocket("ws://csse1001.uqcloud.net:80/game/socket");
+	game = new WebSocket("ws://csse1001.uqcloud.net/game", "maze");
 	game.onmessage = function (event) {
 		console.log("message!");
 		console.log(event.data);
@@ -135,5 +135,5 @@ function connect() {
 		console.log("closed");
 	};
 }
-setInterval(connect, 1000);
+setInterval(connect, 10000);
 connect();

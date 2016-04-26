@@ -8,7 +8,7 @@ class GameActor(object):
 	def __init__(self, game, name):
 
 		# Create the socket
-		self._ws = websocket.create_connection("ws://csse1001.uqcloud.net/game/")
+		self._ws = websocket.create_connection("ws://csse1001.uqcloud.net/game")
 		
 		# Send the join packet
 		msg = json.dumps({

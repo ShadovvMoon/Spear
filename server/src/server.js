@@ -5,28 +5,6 @@ module.exports = class {
 	httpServer() {
 	
 		var http = require('http');
-		var WebSocketServer = require('ws').Server;
-
-		var server = http.createServer();
-		var wss = new WebSocketServer({
-			server: server,
-			path: '/socket'
-		});
-
-		wss.on('connection', function (ws) {
-
-			ws.send('echo server');
-
-			ws.on('message', function (message) {
-				ws.send(message);
-			});
-
-		});
-
-		server.listen(7000);
-	
-		return;
-	
 		const self = this;
 		const config = require("../config.js");
 		
