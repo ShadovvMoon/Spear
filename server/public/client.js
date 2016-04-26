@@ -74,7 +74,7 @@ function connect() {
 	state = 1;
 	
     var hash = window.location.hash.substring(1)
-	game = new WebSocket("ws://localhost:7000/game/socket", hash);
+	game = new WebSocket("ws://csse1001.uqcloud.net/game/socket", hash);
 	game.onmessage = function (event) {
 		var msg = undefined;
 		try {
