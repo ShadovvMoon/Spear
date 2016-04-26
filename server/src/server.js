@@ -2,23 +2,244 @@
 
 module.exports = class {
 
-	httpServer() {
-	
-		var http = require('http');
+	onHTMLClient(request) {
 		const self = this;
+		
+		// Max clients
+		if (self.httpClients.length >= 3) {
+			request.reject();
+			console.log((new Date()) + 
+			' Connection from origin ' + request.origin + 
+			' rejected - too many clients.');
+			return;
+		}
+		
+		// Check protocol
+		const gametypes = request.requestedProtocols;
+		if (typeof gametypes === 'undefined' || gametypes.length < 1) {
+			request.reject();
+			console.log((new Date()) + 
+			' Connection from origin ' + request.origin + 
+			' rejected - missing gametype.');
+			return;
+		}
+		let controller = null;
+		for (const gametype of gametypes) {
+			if (self.controllers.has(gametype)) {
+				controller = self.controllers.get(gametype);
+				break;
+			}
+		}
+		if (controller == null) {
+			request.reject();
+			console.log((new Date()) + 
+			' Connection from origin ' + request.origin + 
+			' rejected - invalid gametype.');
+			return;
+		}
+		
+		var connection = request.accept('', request.origin);
+		controller.joinHTML(connection);
+		self.httpClients.push(connection);
+				
+		// Events
+		console.log((new Date()) + ' Connection accepted.');
+		connection.on('message', function(message) {
+			if (message.type === 'utf8') {
+				console.log('Received Message: ' + message.utf8Data);
+				connection.sendUTF(message.utf8Data);
+			}
+			else if (message.type === 'binary') {
+				console.log('Received Binary Message of ' + message.binaryData.length + ' bytes');
+				connection.sendBytes(message.binaryData);
+			}
+		});
+		
+		connection.on('close', function(reasonCode, description) {
+			self.httpClients.splice(self.httpClients.indexOf(connection), 1);
+			controller.leaveHTML(connection);
+			console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
+		});
+	}
+	
+	onGameClient(request) {
+		const self = this;
+		const required_version = "1.0"; // required client version
+		
+		// Max clients
+		if (self.gameClients.length >= 30) {
+			request.reject();
+			console.log((new Date()) + 
+			' Connection from origin ' + request.origin + 
+			' rejected - too many clients.');
+			return;
+		}
+		
+		// Check protocol
+		const gametypes = request.requestedProtocols;
+		if (typeof gametypes === 'undefined' || gametypes.length < 1) {
+			request.reject();
+			console.log((new Date()) + 
+			' Connection from origin ' + request.origin + 
+			' rejected - missing gametype.');
+			return;
+		}
+		
+		let play = undefined;
+		let controller = null;
+		for (const gametype of gametypes) {
+			if (self.controllers.has(gametype)) {
+				controller = self.controllers.get(gametype);
+				play = gametype;
+				break;
+			}
+		}
+		if (controller == null) {
+			request.reject();
+			console.log((new Date()) + 
+			' Connection from origin ' + request.origin + 
+			' rejected - invalid gametype.');
+			return;
+		}
+		
+		// Accept the connection
+		var connection = request.accept(play, request.origin);
+		
+		// Modified transmit packet
+		let client = {};
+		client.connection = connection;
+		client.message = function(msg) {
+			client.connection.send(msg);
+		} 
+		client.destroy = function() {
+			client.connection.close();
+		}
+		self.gameClients.push(client);
+		
+		// Connection messages
+		client.message(JSON.stringify({
+			action: "join",
+			game: "",
+			version: 1.0,
+			author: "Samuel Colbran"
+		}));
+
+
+		// Events
+		client.packet = "";
+		client.level = 0;
+		connection.on('message', function(message) {
+			if (message.type !== 'utf8') {
+				return client.destroy();
+			}
+			
+			// Parse JSON message
+			var msg = undefined;
+			try {
+				msg = JSON.parse(message.utf8Data);
+			} catch (err) {
+				console.log("Error: unable to parse player message");
+				console.log(""+message.utf8Data);
+				console.log(err);
+				return client.destroy();
+			}
+	
+			// Retrieve message action
+			let action = msg['action'];
+			if (typeof action === 'undefined') {
+				console.log("Error: missing action");
+				return client.destroy();
+			}
+	
+			// Handle action
+			if (action == "join" && typeof client.name == 'undefined') {
+				let name = msg['name'];
+				let version = msg['version'];
+				let gametype = msg['game'];
+
+				// Guards
+				if (!self.controllers.has(gametype)) {
+					console.log("Error: join has invalid gametype");
+					return client.destroy();
+				}
+				if (typeof name === 'undefined') {
+					console.log("Error: join is missing name");
+					return client.destroy();
+				}
+				if (typeof version === 'undefined') {
+					console.log("Error: join is missing version");
+					return client.destroy();
+				}
+				if (version != required_version) {
+					client.message(JSON.stringify({
+						"action" : "error",
+						"message" : ("please update your client to version "	+ required_version)
+					}));
+					console.log("Error: join is missing version");
+					return client.destroy();
+				}
+		
+				// Welcome! Send to the current game handler...
+				console.log("Server: client (" + name + ") joined");
+				client.name    = name;
+				client.version = version;
+				client.active  = true;
+				client.controller = self.controllers.get(gametype);
+				client.controller.joinGame(client);
+			} else if (!client.active || !client.controller.event(client, msg)) {
+				console.log("Error: invalid action \"" + action + "\"");
+				return client.destroy();
+			}
+		});
+		connection.on('error', function(err) {
+			console.log(err);	
+		});
+		connection.on('close', function() {
+			self.gameClients.splice(self.gameClients.indexOf(client), 1);
+			if (client.active) {
+				console.log("Server: client (" + client.name + ") disconnected");
+				client.controller.leaveGame(client);
+			} else {
+				console.log("Server: client disconnected");
+			}
+			return client.destroy();
+		});
+	}
+
+	httpServer() {
+		const self = this;
+		const fs = require("fs");
 		const config = require("../config.js");
 		
+		self.httpClients = [];
+		self.gameClients = [];
+		
 		console.log("Starting websocket server...");
+		
+		// Simple resource map
+		var resource = {
+			"/game/client" : "./public/client.html",
+			"/game/client.js" : "./public/client.js"
+		}
 		
 		// Create the client server
 		var WebSocketServer = require('websocket').server;
 		var http = require('http');
 		var server = http.createServer(function(request, response) {
 			console.log((new Date()) + ' Received request for ' + request.url);
-			if (request.url == "/game/socket") {
-				// Upgrade
+			
+			var path = resource[request.url];
+			if (typeof path !== 'undefined') {
+				fs.readFile(path, function(err, data) {
+					if (err) {
+						return console.log(err);
+					}
+					response.write(data);
+					response.end();
+				});
 				return;
 			}
+
 			response.writeHead(404);
 			response.end();
 		});
@@ -39,221 +260,30 @@ module.exports = class {
 		  return true;
 		}
  
- 		var clients = [];
 		wsServer.on('request', function(request) {
 		
-			// Only accept requests from an allowed origin 
+			// Only accept requests from an allowed origin
+			console.log("Received request"); 
 			if (!originIsAllowed(request.origin)) {
 			  request.reject();
-			  console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected.');
+			  console.log((new Date()) + 
+			  ' Connection from origin ' + request.origin + ' rejected.');
 			  return;
 			}
-	
-			// Max clients
-			if (clients.length >= 3) {
-				request.reject();
-				console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected - too many clients.');
-				return;
-			}
 			
-			// Check protocol
-			const gametypes = request.requestedProtocols;
-			if (typeof gametypes === 'undefined' || gametypes.length < 1) {
+			// Select a handler
+			if (request.resourceURL.path == "/game") {
+				self.onGameClient(request);
+			} else if (request.resourceURL.path == "/game/socket") {
+				self.onHTMLClient(request);
+			} else {
 				request.reject();
-				console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected - missing gametype.');
-				return;
-			}
-			let controller = null;
-			for (const gametype of gametypes) {
-				if (self.controllers.has(gametype)) {
-					controller = self.controllers.get(gametype);
-					break;
-				}
-			}
-			if (controller == null) {
-				request.reject();
-				console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected - invalid gametype.');
-				return;
-			}
-			
-			var connection = request.accept('', request.origin);
-			controller.joinHTML(connection);
-			clients.push(connection);
-					
-			// Events
-			console.log((new Date()) + ' Connection accepted.');
-			connection.on('message', function(message) {
-				if (message.type === 'utf8') {
-					console.log('Received Message: ' + message.utf8Data);
-					connection.sendUTF(message.utf8Data);
-				}
-				else if (message.type === 'binary') {
-					console.log('Received Binary Message of ' + message.binaryData.length + ' bytes');
-					connection.sendBytes(message.binaryData);
-				}
-			});
-			
-			connection.on('close', function(reasonCode, description) {
-				clients.splice(clients.indexOf(connection), 1);
-				controller.leaveHTML(connection);
-				console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
-			});
+			  	console.log((new Date()) + 
+			  	' Connection from origin ' + request.origin + 
+			  	' rejected - invalid path \''+request.resourceURL.path+'\'');
+			  	return;
+			}	
 		});
-	}
-
-	
-	gameServer(port) {
-		console.log("Starting game server...");
-	
-		// Create the game server
-		const required_version = "1.0"; // required client version
-		const net = require('net');
-		const config = require("../config.js");
-		const self = this;
-		
-		var clients = [];
-		var server = net.createServer((client) => {
-			client.active = false;
-			if (clients.length >= 30) {
-				console.log("Error: kicked client - server is full");
-				return client.destroy();
-			}
-			clients.push(client);
-			
-			// Utility function
-			// Source: http://stackoverflow.com/questions/4021813/sending-data-from-node-js-to-java-over-tcp 
-			function writeInt(stream, int){
-			   var bytes = new Array(4)
-			   bytes[0] = int >> 24
-			   bytes[1] = int >> 16
-			   bytes[2] = int >> 8
-			   bytes[3] = int
-			   stream.write(new Buffer(bytes))
-			}
-
-			// Modified transmit packet
-			client.message = function(msg) {
-				writeInt(client, msg.length);
-				client.write(msg);
-			} 
-
-			// Connection messages
-			client.message(JSON.stringify({
-				action: "join",
-				game: "",
-				version: 1.0,
-				author: "Samuel Colbran"
-			}));
-
-			function onMessage(client, data) {
-	
-				// Parse JSON message
-				var msg = undefined;
-				try {
-					msg = JSON.parse(data);
-				} catch (err) {
-					console.log("Error: unable to parse player message");
-					console.log(""+data);
-					console.log(err);
-					return client.destroy();
-				}
-		
-				// Retrieve message action
-				let action = msg['action'];
-				if (typeof action === 'undefined') {
-					console.log("Error: missing action");
-					return client.destroy();
-				}
-		
-				// Handle action
-				if (action == "join" && typeof client.name == 'undefined') {
-					let name = msg['name'];
-					let version = msg['version'];
-					let gametype = msg['game'];
-
-					// Guards
-					if (!self.controllers.has(gametype)) {
-						console.log("Error: join has invalid gametype");
-						return client.destroy();
-					}
-					if (typeof name === 'undefined') {
-						console.log("Error: join is missing name");
-						return client.destroy();
-					}
-					if (typeof version === 'undefined') {
-						console.log("Error: join is missing version");
-						return client.destroy();
-					}
-					if (version != required_version) {
-						client.message(JSON.stringify({
-							"action" : "error",
-							"message" : ("please update your client to version "	+ required_version)
-						}));
-						console.log("Error: join is missing version");
-						return client.destroy();
-					}
-			
-					// Welcome! Send to the current game handler...
-					console.log("Server: client (" + name + ") joined");
-					client.name    = name;
-					client.version = version;
-					client.active  = true;
-					client.controller = self.controllers.get(gametype);
-					client.controller.joinGame(client);
-				} else if (!client.active || !client.controller.event(client, msg)) {
-					console.log("Error: invalid action \"" + action + "\"");
-					return client.destroy();
-				}
-			}
-
-			// Events
-			client.packet = "";
-			client.level = 0;
-			client.on('data', function(data) {
-		
-				// Attempt to split the data up into dictionaries
-				var messages = [];
-				for (var i = 0; i < data.length; i++) {
-		
-					// Separate the message
-					var c = String.fromCharCode(data[i]);
-					if (c == "{") {
-						client.level++;
-					} else if (c == "}") {
-						client.level--;
-						if (client.level == 0) {
-							messages.push("{" + client.packet + "}");
-							client.packet = "";
-						}
-					} else {
-						client.packet += c;
-					}
-			
-					// Maximum packet size
-					if (client.packet.length > 1024) {
-						return client.disconnect();
-					}
-				}
-	
-				for (var message of messages) {
-					onMessage(client, message);
-				}
-			});
-			client.on('error', function(err) {
-				console.log(err);	
-			});
-			client.on('close', function() {
-				clients.splice(clients.indexOf(client), 1);
-				if (client.active) {
-					console.log("Server: client (" + client.name + ") disconnected");
-					client.controller.leaveGame(client);
-				} else {
-					console.log("Server: client disconnected");
-				}
-				return client.destroy();
-			});
-		});
-		server.listen(port, config.domain);
 	}
 
 	constructor(port) {
@@ -285,10 +315,8 @@ module.exports = class {
 	
 		// Launch the servers	
 		promise.then(() => {
-			console.log("Starting servers...");
-				
+			console.log("Starting server...");
 			this.httpServer();
-			//this.gameServer(port);
 		}, console.error);
 	}
 }

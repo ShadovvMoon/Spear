@@ -70,16 +70,13 @@ function connect() {
 	if (game != null && game.readyState == 1) {
 		return;
 	}
-
 	if(!window.location.hash) {
 		return;
 	}
 	
     var hash = window.location.hash.substring(1)
-	game = new WebSocket("ws://csse1001.uqcloud.net/game", "maze");
+	game = new WebSocket("ws://localhost:7000/game/socket", hash);
 	game.onmessage = function (event) {
-		console.log("message!");
-		console.log(event.data);
 		var msg = undefined;
 		try {
 			msg = JSON.parse(event.data);
@@ -129,11 +126,10 @@ function connect() {
 	};
 	game.onopen = function() {
 		console.log("open");
-		game.send("hello");
 	}
 	game.onclose = function() { 
 		console.log("closed");
 	};
 }
-setInterval(connect, 10000);
+setInterval(connect, 1000);
 connect();
