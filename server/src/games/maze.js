@@ -155,13 +155,13 @@ module.exports = class extends Game {
 		for (var client of this.clients) {
 		
 			let cell = this.maze[client.game.my][client.game.mx];
-			if (client.game.d == 0 && cell[0] != 0) { // up
+			if (client.game.cd == 0 && cell[0] != 0) { // up
 				client.game.y -= 1 / this.rPerTick;
-			} else if (client.game.d == 1 && cell[1] != 0) { // right
+			} else if (client.game.cd == 1 && cell[1] != 0) { // right
 				client.game.x += 1 / this.rPerTick;
-			} else if (client.game.d == 2 && cell[2] != 0) { // down
+			} else if (client.game.cd == 2 && cell[2] != 0) { // down
 				client.game.y += 1 / this.rPerTick;
-			} else if (client.game.d == 3 && cell[3] != 0) { // left
+			} else if (client.game.cd == 3 && cell[3] != 0) { // left
 				client.game.x -= 1 / this.rPerTick;
 			} else {
 				// invalid move
@@ -187,15 +187,19 @@ module.exports = class extends Game {
 
 	tick() {
 		for (var client of this.clients) {
+			// Update client movement
+			client.game.cd = client.game.d;
+			client.game.d = 4;
+		
 			// Update client position
 			let cell = this.maze[client.game.my][client.game.mx];
-			if (client.game.d == 0 && cell[0] != 0) { // up
+			if (client.game.cd == 0 && cell[0] != 0) { // up
 				client.game.my -= 1;
-			} else if (client.game.d == 1 && cell[1] != 0) { // right
+			} else if (client.game.cd == 1 && cell[1] != 0) { // right
 				client.game.mx += 1;
-			} else if (client.game.d == 2 && cell[2] != 0) { // down
+			} else if (client.game.cd == 2 && cell[2] != 0) { // down
 				client.game.my += 1;
-			} else if (client.game.d == 3 && cell[3] != 0) { // left
+			} else if (client.game.cd == 3 && cell[3] != 0) { // left
 				client.game.mx -= 1;
 			} else {
 				// invalid move
@@ -243,6 +247,7 @@ module.exports = class extends Game {
 		
 		// Set the game start position
 		client.game = {};
+		client.game.cd = 4;
 		client.game.x  = this.xsize - 1 - 2 * this.padd;
 		client.game.y  = this.ysize - 1 - 2 * this.padd;
 		client.game.mx = this.xsize - 1 - 2 * this.padd;

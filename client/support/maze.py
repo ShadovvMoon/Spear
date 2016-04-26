@@ -2,6 +2,7 @@ from support.game import *
 class MazeActor(GameActor):
 	def __init__(self, name):
 		GameActor.__init__(self, "maze", name)
+		self._canMove = False;
 
 	def _onMessage(self, msg):
 		action = msg.get("action");
@@ -9,15 +10,22 @@ class MazeActor(GameActor):
 			self._x = msg.get("x")
 			self._y = msg.get("y")
 			self._s = msg.get("s")
+
+			self._canMove = True;
 			self.tick()
 		else:
 			GameActor._onMessage(self, msg)
 
 	def _move(self, direction):
+		if not self._canMove:
+			raise RuntimeError("You can only move once per tick")
+			
 		msg = json.dumps({
 			'action' : 'move',
 			'd' : direction
 		}).encode('utf8')
+
+		self._canMove = False;
 		self._ws.send(msg)
 
 	def x(self):
@@ -54,5 +62,5 @@ class MazeActor(GameActor):
 		self._move(5)
 
 	def tick(self):
-		self._move(5) # used as a heartbeat
+		pass
 
