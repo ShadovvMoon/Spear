@@ -116,4 +116,4 @@ class ArenaActor(GameActor, Player):
 		self._move('3')
 		
 	def tick(self):
-		self._move(5) # used as a heartbeat
+		pass
