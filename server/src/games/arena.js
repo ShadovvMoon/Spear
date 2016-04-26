@@ -10,8 +10,8 @@ module.exports = class extends Game {
 		this.queue = [];
 	
 		// Bullet options
-		this.clean   = 100; // bullet cleanup age
-		this.fire    = 50;  // bullet tick age
+		this.clean   = 150; // bullet cleanup age
+		this.fire    = 100;  // bullet tick age
 		this.bradius = 5;  // bullet radius
 		this.damage  = 20;
 		
