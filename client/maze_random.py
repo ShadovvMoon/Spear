@@ -8,6 +8,9 @@ class MazeRobot(MazeActor):
 	def tick(self):
 		MazeActor.tick(self)
 
+		if self.x() == 0 and self.y() == 0:
+			return
+
 		while True:
 			move = random.randint(0, 4)
 			if move == 0 and self.canMoveUp():

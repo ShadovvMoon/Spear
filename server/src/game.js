@@ -21,10 +21,10 @@ module.exports = class {
 				self.counter = 0;
 			}
 		}, this.rInterval);  
-		  
 	}
 	
 	// Utility functions
+	// Render api v1
 	draw(elements, client) {
 		let display = JSON.stringify({
 			"action" : "render",
@@ -34,8 +34,14 @@ module.exports = class {
 		});	
 		
 		if (typeof client !== 'undefined') {
+			console.log("Message size: " + display.length);
 			return client.send(display);
 		}
+		if (this.html.length == 0) {
+			return;
+		}
+		
+		console.log("Broadcast size: " + display.length);
 		for (var client of this.html) {
   			client.send(display);
 		}

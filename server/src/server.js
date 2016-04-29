@@ -221,7 +221,9 @@ module.exports = class {
 		// Simple resource map
 		var resource = {
 			"/game/client.html" : "./public/client.html",
-			"/game/client.js" : "./public/client.js"
+			"/game/client.js" : "./public/client.js",
+			"/game/client+.html" : "./public/client+.html",
+			"/game/client+.js" : "./public/client+.js"
 		}
 		
 		// Create the client server

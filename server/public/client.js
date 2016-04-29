@@ -102,8 +102,13 @@ function connect() {
 	}
 	state = 1;
 	
+	// Extract server from url
+	var url = "ws://" + window.location.host + 
+		window.location.pathname.slice(0, 
+		window.location.pathname.length - "client.html".length) + "socket";
+	
     var hash = window.location.hash.substring(1)
-	game = new WebSocket("ws://csse1001.uqcloud.net/game/socket", hash);
+	game = new WebSocket(url, hash);
 	game.onmessage = function (event) {
 		var msg = undefined;
 		try {
